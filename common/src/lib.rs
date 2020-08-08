@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize)]
 pub enum MessageFromServer
 {
+    LoginResponse(bool),
     Init {
         players: Vec<String>,
         round_number: u64,
@@ -22,9 +23,9 @@ pub enum MessageFromServer
 #[derive(Serialize, Deserialize)]
 pub enum MessageFromClient
 {
-    IAm {
+    Login {
         username: String,
-        token: String
+        password: String
     },
     Bet {
         dices_count: u64,
