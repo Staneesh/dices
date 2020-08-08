@@ -91,7 +91,8 @@ fn main() {
 
             MessageFromServer::GameEnd { winner } => {
                 println!("Game ended - {} won!", winner);
-            }
+            },
+            MessageFromServer::LoginResponse(_) => {}
         }
     }
 }
