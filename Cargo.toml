@@ -1,7 +1,6 @@
 [workspace]
 
 members = [
-	"auth_server",
 	"game_server",
 	"client_lib",
 	"client_cli"
