@@ -3,5 +3,6 @@
 members = [
 	"game_server",
 	"client_lib",
-	"client_cli"
+	"client_cli",
+	"common"
 ]
