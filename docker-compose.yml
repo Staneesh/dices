@@ -11,6 +11,10 @@ services:
     restart: always
     ports:
       - 8081:8081
+  server:
+    build: .
+    ports:
+      - 2137:2137
 
 volumes:
   mongodb_data_container:
