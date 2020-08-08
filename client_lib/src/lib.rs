@@ -1,6 +1,6 @@
 use common::MessageFromServer;
 
-struct ServerConnector
+pub struct ServerConnector
 {
 
 
@@ -8,12 +8,12 @@ struct ServerConnector
 
 impl ServerConnector
 {
-    fn new(server_address: std::net::IpAddr) -> Result<ServerConnector, String>
+    pub fn new(server_address: std::net::IpAddr) -> Result<ServerConnector, String>
     {
         unimplemented!();
     }
 
-    fn wait_for_message() -> Result<MessageFromServer, String>
+    pub fn wait_for_message() -> Result<MessageFromServer, String>
     {
         unimplemented!();
     }
