@@ -7,19 +7,19 @@ pub struct GameManager
 
 impl GameManager
 {
-    fn new(server_address: &str) -> Result<GameManager, Box<dyn std::error::Error>>
+    pub fn new(server_address: &str) -> Result<GameManager, Box<dyn std::error::Error>>
     {
         Ok(GameManager {
             server_connector: ServerConnector::new(server_address) ?
         })
     }
 
-    fn submit_bet(&mut self, dices_count: u64, number_on_dice: u64)
+    pub fn submit_bet(&mut self, dices_count: u64, number_on_dice: u64)
     {
 
     }
 
-    fn submit_check(&mut self)
+    pub fn submit_check(&mut self)
     {
 
     }
