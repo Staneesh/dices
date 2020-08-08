@@ -6,8 +6,8 @@ use std::io;
 fn main() {
     println!("Welcome to DAJSES");
 
-    let mut server_connector = ServerConnector::new("127.0.0.1").unwrap();
-    let mut game_manager = GameManager::new("127.0.0.1").unwrap();
+    let mut server_connector = ServerConnector::new("127.0.0.1:8080").unwrap();
+    let mut game_manager = GameManager::new("127.0.0.1:8080").unwrap();
 
     loop {
         let wait_result = server_connector.wait_for_message();
