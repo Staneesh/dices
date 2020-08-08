@@ -8,7 +8,8 @@ fn main() {
     let server_address = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 0));
     let mut server_connector = ServerConnector::new(server_address).unwrap();
 
-    while let wait_result = server_connector.wait_for_message() {
+    loop {
+        let wait_result = server_connector.wait_for_message();
         let task = wait_result.unwrap();
 
         match task {
@@ -17,7 +18,7 @@ fn main() {
                 round_number,
                 your_dices,
             } => {
-                println!("Init");
+                println!("Init!");
             }
 
             MessageFromServer::YourMove { username } => {
