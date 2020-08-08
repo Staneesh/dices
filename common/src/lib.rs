@@ -1,4 +1,6 @@
+use serde::{Serialize, Deserialize};
 
+#[derive(Serialize, Deserialize)]
 pub enum MessageFromServer
 {
     Init {
@@ -17,6 +19,7 @@ pub enum MessageFromServer
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum MessageFromClient
 {
     IAm {

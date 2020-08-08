@@ -5,8 +5,7 @@ use std::net::{IpAddr, Ipv4Addr};
 fn main() {
     println!("Welcome to DAJSES");
 
-    let server_address = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 0));
-    let mut server_connector = ServerConnector::new(server_address).unwrap();
+    let mut server_connector = ServerConnector::new("127.0.0.1:3000").unwrap();
 
     loop {
         let wait_result = server_connector.wait_for_message();
