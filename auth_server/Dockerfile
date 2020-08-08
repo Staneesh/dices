@@ -7,4 +7,5 @@ RUN pip install -r requirements.txt
 
 COPY src/ .
 
-CMD [ "uvicorn", "app:app", "--reload" ]
+EXPOSE 8000
+CMD [ "uvicorn", "app:app", "--reload", "--host", "0.0.0.0" ]
