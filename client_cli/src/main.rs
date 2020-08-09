@@ -66,9 +66,9 @@ fn main() {
                                     let a = a_res.unwrap();
                                     let c = c_res.unwrap();
 
-                                    if a >= 0 && a <= 5 {
+                                    if a <= 5 {
                                         if b == "x" {
-                                            if c >= 0 && c <= 6 {
+                                            if c <= 6 {
                                                 //correct!
                                                 correct_bet = 1;
                                                 game_manager.submit_bet(a, c);
@@ -93,7 +93,7 @@ fn main() {
 
             MessageFromServer::GameEnd { winner } => {
                 println!("Game ended - {} won!", winner);
-            },
+            }
             MessageFromServer::LoginResponse(_) => {}
         }
     }
