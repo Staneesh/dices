@@ -27,6 +27,10 @@ pub enum MessageFromClient
         username: String,
         password: String
     },
+    JoinRoom {
+        room_id: u64
+    },
+    StartGame,
     Bet {
         dices_count: u64,
         number_on_dice: u64

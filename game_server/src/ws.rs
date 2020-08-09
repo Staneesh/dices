@@ -55,17 +55,11 @@ async fn verify_user(username: &str, password: &str) -> Result<bool, Box<dyn Err
     let db = client.database("game");
 
     // Query the documents in the collection with a filter and an option.
-    let mut cursor = db.collection("users").find(doc! {"username": username}, FindOptions::builder().build()).await?;
+    let document_option = db.collection("users").find_one(doc! {"username": username}, None).await?;
 
-    // Iterate over the results of the cursor.
-    while let Some(result) = cursor.next().await {
-        match result {
-            Ok(document) => {
-                if let Some(user_password) = document.get("password").and_then(Bson::as_str) {
-                    return Ok(password == user_password);
-                }
-            }
-            Err(e) => return Err(e.into()),
+    if let Some(document) = document_option {
+        if let Some(user_password) = document.get("password").and_then(Bson::as_str) {
+            return Ok(password == user_password);
         }
     }
 
@@ -116,7 +110,9 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
                 }
             }
             m = b => {
-                // handle game logic
+                let client_message: MessageFromClient = parse_message(m.unwrap().unwrap()).unwrap();
+                
+                
             }
         }
     }
