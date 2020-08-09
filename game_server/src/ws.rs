@@ -20,30 +20,59 @@ use tokio::select;
 use async_tungstenite::tungstenite::protocol::Message;
 use lazy_static::lazy_static;
 
+use mongodb::{Client, options::ClientOptions};
+
+use common::{MessageFromClient, MessageFromServer};
+
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<String, Tx>>>;
 
-async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
+fn parse_message(ws_message: Message) -> Result<MessageFromClient, ()>
+{
+    if let Message::Text(message_str) = ws_message 
+    {
+        match serde_json::from_str::<MessageFromClient>(&message_str) {
+            Ok(message_from_client) => return Ok(message_from_client),
+            Err(_) => return Err(())
+        };
+    } 
+    else 
+    {
+        return Err(());
+    }
+}
+
+async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr)
+{
+    // Parse a connection string into an options struct.
+    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
+
+    // Get a handle to the deployment.
+    let client = Client::with_options(client_options).unwrap();
+
+    // Get a handle to a database.
+    let db = client.database("mydb");
+
     println!("Incoming TCP connection from: {}", addr);
 
-    let mut ws_stream = async_tungstenite::tokio::accept_async(raw_stream)
-        .await
-        .expect("Error during the websocket handshake occurred");
+    let mut ws_stream = async_tungstenite::tokio::accept_async(raw_stream).await.unwrap();
     println!("WebSocket connection established: {}", addr);
+
+    // Login user
+    let mut user: String = String::from("unknown");
+
+    let login_message = parse_message(ws_stream.next().await.unwrap().unwrap()).unwrap();
+    if let MessageFromClient::Login {username, password} = login_message {
+        println!("Received login request from {} with password {}", &username, &password);
+        user = username;
+    }
+    else {
+        panic!();
+    }
 
     let (tx, mut rx) = unbounded_channel();
 
-    // czekaj na token usera
-    let (username, game_id): (String, u32) = match ws_stream.next().await {
-        Some(Ok(msg)) => {
-            // tutaj zapytanie do mongodb o to w jakiej grze jest user
-            
-            // zwróć username i game_id
-            ("jan".to_string(), 1)
-        }
-        _ => { return; }
-    };
-    peer_map.lock().await.insert(username.clone(), tx);
+    peer_map.lock().await.insert(user.clone(), tx);
 
     loop {
         let a = rx.next();
@@ -61,7 +90,7 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
         }
     }
 
-    peer_map.lock().await.remove(&username);
+    peer_map.lock().await.remove(&user);
 }
 
 pub async fn listen(addr: String) -> Result<(), Box<dyn Error>> {
