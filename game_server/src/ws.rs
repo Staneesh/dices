@@ -20,10 +20,14 @@ use tokio::select;
 use async_tungstenite::tungstenite::protocol::Message;
 use lazy_static::lazy_static;
 
-use mongodb::{Client, options::ClientOptions};
-use mongodb::bson::doc;
-
 use common::{MessageFromClient, MessageFromServer};
+
+use mongodb::{
+    Client,
+    options::ClientOptions,
+    bson::{doc, Bson},
+    options::FindOptions,
+};
 
 type Tx = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<String, Tx>>>;
@@ -43,28 +47,33 @@ fn parse_message(ws_message: Message) -> Result<MessageFromClient, ()>
     }
 }
 
+async fn verify_user(username: &str, password: &str) -> Result<bool, Box<dyn Error>>
+{
+    // Connect to the database
+    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
+    let client = Client::with_options(client_options).unwrap();
+    let db = client.database("game");
+
+    // Query the documents in the collection with a filter and an option.
+    let mut cursor = db.collection("users").find(doc! {"username": username}, FindOptions::builder().build()).await?;
+
+    // Iterate over the results of the cursor.
+    while let Some(result) = cursor.next().await {
+        match result {
+            Ok(document) => {
+                if let Some(user_password) = document.get("password").and_then(Bson::as_str) {
+                    return Ok(password == user_password);
+                }
+            }
+            Err(e) => return Err(e.into()),
+        }
+    }
+
+    Ok(false)
+}
+
 async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: SocketAddr)
 {
-    // Parse a connection string into an options struct.
-    let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();
-
-    // Get a handle to the deployment.
-    let client = Client::with_options(client_options).unwrap();
-
-    // Get a handle to a database.
-    let db = client.database("mydb");
-
-    let collection = db.collection("books");
-
-    let docs = vec![
-        doc! { "title": "1984", "author": "George Orwell" },
-        doc! { "title": "Animal Farm", "author": "George Orwell" },
-        doc! { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald" },
-    ];
-
-    // Insert some documents into the "mydb.books" collection.
-    collection.insert_many(docs, None).await.unwrap();
-
     println!("Incoming TCP connection from: {}", addr);
 
     let mut ws_stream = async_tungstenite::tokio::accept_async(raw_stream).await.unwrap();
@@ -72,18 +81,28 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
 
     // Login user
     let mut user: String = String::from("unknown");
+    let mut login_result: bool = false;
 
-    let login_message = parse_message(ws_stream.next().await.unwrap().unwrap()).unwrap();
-    if let MessageFromClient::Login {username, password} = login_message {
-        println!("Received login request from {} with password {}", &username, &password);
-        user = username;
-    }
-    else {
-        panic!();
+    while login_result == false 
+    {
+        let login_message = parse_message(ws_stream.next().await.unwrap().unwrap()).unwrap();
+        if let MessageFromClient::Login {username, password} = login_message {
+            println!("Received login request from {} with password {}", &username, &password);
+            
+            if verify_user(&username, &password).await.unwrap() {
+                login_result = true;
+                user = username;
+            }
+        }
+        else {
+            panic!();
+        }
+    
+        let login_response_msg = MessageFromServer::LoginResponse(login_result);
+        ws_stream.send(Message::Text(serde_json::to_string(&login_response_msg).unwrap())).await.unwrap();
     }
 
     let (tx, mut rx) = unbounded_channel();
-
     peer_map.lock().await.insert(user.clone(), tx);
 
     loop {
