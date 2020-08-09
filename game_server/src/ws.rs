@@ -21,6 +21,7 @@ use async_tungstenite::tungstenite::protocol::Message;
 use lazy_static::lazy_static;
 
 use mongodb::{Client, options::ClientOptions};
+use mongodb::bson::doc;
 
 use common::{MessageFromClient, MessageFromServer};
 
@@ -52,6 +53,17 @@ async fn handle_connection(peer_map: PeerMap, raw_stream: TcpStream, addr: Socke
 
     // Get a handle to a database.
     let db = client.database("mydb");
+
+    let collection = db.collection("books");
+
+    let docs = vec![
+        doc! { "title": "1984", "author": "George Orwell" },
+        doc! { "title": "Animal Farm", "author": "George Orwell" },
+        doc! { "title": "The Great Gatsby", "author": "F. Scott Fitzgerald" },
+    ];
+
+    // Insert some documents into the "mydb.books" collection.
+    collection.insert_many(docs, None).await.unwrap();
 
     println!("Incoming TCP connection from: {}", addr);
 
