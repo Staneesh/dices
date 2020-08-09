@@ -1,8 +1,7 @@
 mod ws;
 
-use std::error::Error;
 use std::env;
-
+use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

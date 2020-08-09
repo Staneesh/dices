@@ -1,5 +1,5 @@
-pub mod server_connector;
 pub mod game_manager;
+pub mod server_connector;
 
 #[cfg(test)]
 mod tests {

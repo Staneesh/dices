@@ -7,7 +7,7 @@ fn main() {
     println!("Welcome to DAJSES");
 
     let mut server_connector = ServerConnector::new("127.0.0.1:2137").unwrap();
-    
+
     let mut game_manager = GameManager::new("127.0.0.1:2137").unwrap();
     println!("{:?}", game_manager.login("User", "Pass"));
 

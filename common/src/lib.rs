@@ -1,41 +1,39 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub enum MessageFromServer
-{
+pub enum MessageFromServer {
     LoginResponse(bool),
     Init {
         players: Vec<String>,
         round_number: u64,
-        your_dices: Vec<u8>
+        your_dices: Vec<u8>,
     },
     YourMove {
-        username: String
+        username: String,
     },
     RoundEnd {
-        loser: String
+        loser: String,
     },
     GameEnd {
-        winner: String
-    }
+        winner: String,
+    },
 }
 
 #[derive(Serialize, Deserialize)]
-pub enum MessageFromClient
-{
+pub enum MessageFromClient {
     Login {
         username: String,
-        password: String
+        password: String,
     },
     JoinRoom {
-        room_id: u64
+        room_id: u64,
     },
     StartGame,
     Bet {
         dices_count: u64,
-        number_on_dice: u64
+        number_on_dice: u64,
     },
-    Check
+    Check,
 }
 
 #[cfg(test)]
